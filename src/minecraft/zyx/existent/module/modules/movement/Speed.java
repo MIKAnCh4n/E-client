@@ -15,6 +15,7 @@ import zyx.existent.module.Category;
 import zyx.existent.module.Module;
 import zyx.existent.module.data.Options;
 import zyx.existent.module.data.Setting;
+import zyx.existent.utils.ChatUtils;
 import zyx.existent.utils.MoveUtils;
 import zyx.existent.utils.timer.Timer;
 
@@ -32,10 +33,25 @@ public class Speed extends Module {
     private boolean slowDownHop;
     private double less;
     private double stair;
-
+    private int state;
+	private int state1;
+	private int state2;
+	private int state3;
+	private int state4;
+	private int state5;
+	private int state6;
+	private int state7;
+	private int state8;
+	private int state9;
+	private int state10;
+	private int state11;
+	private int state12;
+	private int state13;
+	private int state14;
+	String DamageBoost = "DamageBoost";
     public Speed(String name, String desc, int keybind, Category category) {
         super(name, desc, keybind, category);
-
+        settings.put(DamageBoost, new Setting<>(DamageBoost, false, "DamageBoostSpeed"));
         settings.put(MODE, new Setting<>(MODE, new Options("Mode", "Bhop", new String[]{"Bhop", "Hypixel", "OnGround", "DamageHop", "ScoutHop", "LegitHop"}), "Speed method."));
     }
 
@@ -46,6 +62,8 @@ public class Speed extends Module {
             this.less = 0.0D;
             lastDist = 0.0;
             stage = 2;
+            state3 = 0;
+            state4=0;
             mc.timer.timerSpeed = 1;
             this.damageTimer.reset();
             if (((Options) settings.get(MODE).getValue()).getSelected().equalsIgnoreCase("DamageHop")) {
@@ -74,25 +92,40 @@ public class Speed extends Module {
                 if (MovementInput.moveForward == 0.0f && MovementInput.moveStrafe == 0.0f) {
                     this.moveSpeed = MoveUtils.getBaseMoveSpeed();
                 }
-                if (stage == 1 && mc.thePlayer.isCollidedVertically && mc.thePlayer.isMoving()) {
+                if (stage == 1 && mc.thePlayer.isCollidedVertically && (MovementInput.moveForward != 0.0F || MovementInput.moveStrafe != 0.0F)) {
                     this.moveSpeed = 1.35 + MoveUtils.getBaseMoveSpeed() - 0.01;
                 }
-                if (!mc.thePlayer.isInLiquid() && stage == 2 && mc.thePlayer.isCollidedVertically && mc.thePlayer.isMoving()) {
+                
+                if (!mc.thePlayer.isInLiquid() && stage == 2 && mc.thePlayer.isCollidedVertically && (MovementInput.moveForward != 0.0F || MovementInput.moveStrafe != 0.0F)) {
                     double motY = 0.407D + MoveUtils.getJumpEffect() * 0.1D;
                     this.mc.thePlayer.motionY = motY;
                     eventMove.setY(motY);
                     mc.thePlayer.jump();
+                    state7 = 0;
                     this.moveSpeed *= 1.533D;
+                    if(state4 > 0) {
+                    	this.moveSpeed *= 1.4D;
+                    	state4--;
+                    }
                 } else if (stage == 3) {
                     final double difference = 0.66 * (lastDist - MoveUtils.getBaseMoveSpeed());
                     this.moveSpeed = lastDist - difference;
                 } else {
                     final List collidingList = mc.theWorld.getEntitiesWithinAABBExcludingEntity(mc.thePlayer, mc.thePlayer.boundingBox.offset(0.0, mc.thePlayer.motionY, 0.0));
                     if ((collidingList.size() > 0 || MoveUtils.isOnGround(0.01)) && stage > 0) {
-                        stage = (mc.thePlayer.isMoving() ? 1 : 0);
+                        stage = ((MovementInput.moveForward != 0.0F || MovementInput.moveStrafe != 0.0F) ? 1 : 0);
                     }
                     this.moveSpeed = lastDist - lastDist / 159.0;
                 }
+                if(!mc.thePlayer.canRenderOnFire()) {
+               //	ChatUtils.printChat("bruh");
+                	 state3 = 0;
+                }
+                if(mc.thePlayer.hurtTime >= 9&&this.moveSpeed < 0.6&&(Boolean) settings.get(DamageBoost).getValue()&&state3==0) {
+              	  this.moveSpeed *= 1.6D;
+              	 state4 = 1;
+                }
+               
                 this.moveSpeed = Math.max(this.moveSpeed, MoveUtils.getBaseMoveSpeed());
 
                 if (stage > 0) {
@@ -177,16 +210,16 @@ public class Speed extends Module {
                 if (MovementInput.moveForward == 0.0f && MovementInput.moveStrafe == 0.0f) {
                     this.moveSpeed = MoveUtils.getBaseMoveSpeed();
                 }
-                if (stage == 1 && mc.thePlayer.isCollidedVertically && mc.thePlayer.isMoving()) {
+                if (stage == 1 && mc.thePlayer.isCollidedVertically && (MovementInput.moveForward != 0.0F || MovementInput.moveStrafe != 0.0F)) {
                     this.moveSpeed = 1.2 * MoveUtils.getBaseMoveSpeed() - 0.01;
                 }
-                if (!mc.thePlayer.isInLiquid() && stage == 2 && mc.thePlayer.isCollidedVertically && mc.thePlayer.isMoving()) {
+                if (!mc.thePlayer.isInLiquid() && stage == 2 && mc.thePlayer.isCollidedVertically && (MovementInput.moveForward != 0.0F || MovementInput.moveStrafe != 0.0F)) {
                     if (this.damageTimer.delay(2500.0F)) {
                         this.damageTimer.reset();
                         damage2();
                     }
 
-                    double motY = 0.4D + MoveUtils.getJumpEffect() * 0.1D;
+                    double motY = 0.407D + MoveUtils.getJumpEffect() * 0.1D;
                     this.mc.thePlayer.motionY = motY;
                     eventMove.setY(motY);
                     mc.thePlayer.jump();
@@ -197,7 +230,7 @@ public class Speed extends Module {
                 } else {
                     final List collidingList = mc.theWorld.getEntitiesWithinAABBExcludingEntity(mc.thePlayer, mc.thePlayer.boundingBox.offset(0.0, mc.thePlayer.motionY, 0.0));
                     if ((collidingList.size() > 0 || MoveUtils.isOnGround(0.01)) && stage > 0) {
-                        stage = (mc.thePlayer.isMoving() ? 1 : 0);
+                        stage = ((MovementInput.moveForward != 0.0F || MovementInput.moveStrafe != 0.0F) ? 1 : 0);
                     }
                     this.moveSpeed = lastDist - lastDist / 159.0;
                 }
@@ -221,6 +254,10 @@ public class Speed extends Module {
                 break;
             case "ScoutHop":
                 if (mc.thePlayer.isMoving()) {
+                	if(mc.gameSettings.keyBindJump.pressed) {
+                		
+                		 eventMove.setY(this.mc.thePlayer.motionY = 0.22f);
+                	}
                     if (mc.thePlayer.onGround) {
                         double motY = 0.307D + MoveUtils.getJumpEffect() * 0.1D;
                         this.mc.thePlayer.motionY = motY;
@@ -292,7 +329,10 @@ public class Speed extends Module {
         if (eventPacket.isIncoming()) {
             if (p instanceof SPacketPlayerPosLook) {
                 SPacketPlayerPosLook pac = (SPacketPlayerPosLook) eventPacket.getPacket();
-
+               // ChatUtils.printChat("ajdibhuasihu");
+                if(mc.thePlayer.canRenderOnFire()) {
+                	state3 = 1;
+                }
                 if (lastCheck.delay(300)) {
                     pac.yaw = mc.thePlayer.rotationYaw;
                     pac.pitch = mc.thePlayer.rotationPitch;
