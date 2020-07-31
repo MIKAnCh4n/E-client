@@ -25,7 +25,7 @@ public final class AltLoginThread extends Thread {
 
    private Session createSession(String username, String password) {
       try {
-         GuiAltManager.altService.switchService(AltService.EnumAltService.MOJANG);
+         GuiAltManager.altService.switchService(username.contains("@alt.com") ? AltService.EnumAltService.THEALTENING : AltService.EnumAltService.MOJANG);
 
          YggdrasilAuthenticationService service = new YggdrasilAuthenticationService(Proxy.NO_PROXY, "");
          YggdrasilUserAuthentication auth = (YggdrasilUserAuthentication) service.createUserAuthentication(Agent.MINECRAFT);
