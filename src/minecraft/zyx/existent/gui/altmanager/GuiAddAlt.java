@@ -55,6 +55,28 @@ public class GuiAddAlt extends GuiScreen {
                this.username.setText(credentials[0]);
                this.password.setText(credentials[1]);
             }
+         case 1337:
+             String data1;
+             try {
+                data1 = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+             } catch (Exception var4) {
+                return;
+             }
+             ArrayList<String> list = new ArrayList<String>(Arrays.asList(data1.replace("\r\n", "\n").split("\n")));
+             for (String string : list) {
+            	 String user = "";
+            	 String pass = "";
+            	 if(string.contains("@alt.com")&&!string.contains(":")) {
+            		 user = string;
+            		 pass = "Existent";
+            	 }else {
+            		  user = string.split(":")[0];
+                	  pass = string.split(":")[1];
+            	 }
+            	 AltManager.registry.add(new Alt(user, pass, "LOGIN NOW", Alt.Status.Working));
+			}
+             this.mc.displayGuiScreen(this.manager);
+             break;
       }
 
    }
@@ -83,6 +105,7 @@ public class GuiAddAlt extends GuiScreen {
       this.buttonList.add(new GuiExButton(0, this.width / 2 - 100, this.height / 4 + 92 + 12, "Login"));
       this.buttonList.add(new GuiExButton(1, this.width / 2 - 100, this.height / 4 + 116 + 12, "Back"));
       this.buttonList.add(new GuiExButton(2, this.width / 2 - 100, this.height / 4 + 92 - 12, "Import user:pass"));
+      this.buttonList.add(new GuiExButton(1337, this.width / 2 - 100, this.height / 4 + 92 - 24 - 12, "Import AltList(ClipBoard)"));
       this.username = new GuiTextField(this.eventButton, this.mc.fontRendererObj, this.width / 2 - 100, 60, 200, 20);
       this.password = new PasswordField(this.mc.fontRendererObj, this.width / 2 - 100, 100, 200, 20);
    }
