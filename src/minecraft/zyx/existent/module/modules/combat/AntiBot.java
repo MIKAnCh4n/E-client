@@ -31,11 +31,16 @@ public class AntiBot extends Module {
         return invalid;
     }
     public static List<EntityPlayer> invalid = new ArrayList<>();
+    Entity currentEntity;
+    Entity[] playerList;
+    int index;
+    boolean next;
+    double[] oldPos;
 
     public AntiBot(String name, String desc, int keybind, Category category) {
         super(name, desc, keybind, category);
 
-        settings.put(MODE, new Setting<>(MODE, new Options("Mode", "Hypixel", new String[] {"Packet", "Hypixel", "Mineplex", "Shotbow"}), "Antibot method."));
+        settings.put(MODE, new Setting<>(MODE, new Options("Mode", "Hypixel", new String[] {"Packet", "Matrix", "Hypixel", "Mineplex", "Shotbow"}), "Antibot method."));
     }
 
     @Override
@@ -87,6 +92,39 @@ public class AntiBot extends Module {
                         }
                     }
                 }
+                break;
+            case "Matrix":
+                int j = 0;
+
+                for (int i = 0; i < mc.theWorld.getLoadedEntityList().size(); i++) {
+                    if (mc.theWorld.getLoadedEntityList().get(i) instanceof EntityPlayer) {
+                        playerList[j++] = mc.theWorld.getLoadedEntityList().get(i);
+                    }
+                }
+                if (index > playerList.length - 1) {
+                    index = 0;
+                    return;
+                }
+                if (!next) {
+                    currentEntity = playerList[index];
+                    oldPos[0] = currentEntity.posX;
+                    oldPos[1] = currentEntity.posZ;
+                    next = true;
+                    return;
+                }
+                
+                double xDiff = oldPos[0] - currentEntity.posX;
+                double zDiff = oldPos[1] - currentEntity.posZ;
+                double speed = Math.sqrt(xDiff * xDiff + zDiff * zDiff) * 10; // Legit 6.753686890703971
+
+                if (currentEntity != mc.thePlayer && speed > 6.9 && currentEntity.hurtResistantTime == 0 && currentEntity.posY > mc.thePlayer.posY - 1.5 && currentEntity.posY < mc.thePlayer.posY + 1.5 && mc.thePlayer.getDistanceToEntity(currentEntity) < 4.5) {
+                    mc.theWorld.removeEntity(currentEntity);
+                    NotificationPublisher.queue("AntiBot", "Remove " + currentEntity.getName(), NotificationType.INFO);
+                    ChatUtils.printChatprefix("[AntiBot] Remove " + currentEntity.getName());
+                }
+
+                index++;
+                next = false;
                 break;
         }
     }
