@@ -35,6 +35,14 @@ public class PlayerUtils implements MCUtil {
         mc.thePlayer.connection.sendPacket(new CPacketPlayer.Position(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ, false));
         mc.thePlayer.connection.sendPacket(new CPacketPlayer.Position(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ, true));
     }
+    
+    public static void damage3() {
+        for(int i = 0; (double)i < 29.2D ; ++i) {
+			   Wrapper.addToSendQueue(new CPacketPlayer.Position(mc.thePlayer.posX, mc.thePlayer.posY + 0.0525D , mc.thePlayer.posZ, false));
+			   Wrapper.addToSendQueue(new CPacketPlayer.Position(mc.thePlayer.posX, mc.thePlayer.posY - 0.0525D, mc.thePlayer.posZ, false));
+	    }
+		  Wrapper.addToSendQueue(new CPacketPlayer.Position(mc.thePlayer.posX, mc.thePlayer.posY , mc.thePlayer.posZ, true));
+    }
 
     public static float getMaxFallDist() {
         PotionEffect potioneffect = mc.thePlayer.getActivePotionEffect(Potion.getPotionById(8));

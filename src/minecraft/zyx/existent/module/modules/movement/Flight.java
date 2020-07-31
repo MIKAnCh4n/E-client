@@ -77,7 +77,8 @@ public class Flight extends Module {
                         MoveUtils.setMotion(0.3 + MoveUtils.getSpeedEffect() * 0.05f);
                         break;
                     case "Zoom":
-                        PlayerUtils.damage2();
+                        //PlayerUtils.damage2();
+                        PlayerUtils.damage3();
                         this.mc.thePlayer.motionY = 0.41999998688698f;
                         level = 1;
                         timer.reset();
