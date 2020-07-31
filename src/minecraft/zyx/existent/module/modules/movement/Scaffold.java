@@ -156,9 +156,9 @@ public class Scaffold extends Module {
                     break;
                 case "Front":
                     float[] rot2 = RotationUtils.getIntaveRots(pos, facing);
-                    eventUpdate.setPitch(82.500114F);
+                    eventUpdate.setPitch(79.44F);
                     eventUpdate.setYaw((float)(rot2[0] + 180 + MiscUtils.getDoubleRandom(-0.1D, 0.1D)));
-                    mc.thePlayer.rotationPitchHead = 82.500114F;
+                    mc.thePlayer.rotationPitchHead = 79.44F;
                     mc.thePlayer.rotationYawHead = (float)(rot2[0] + 180 + MiscUtils.getDoubleRandom(-0.1D, 0.1D));
                     mc.thePlayer.renderYawOffset = (float)(rot2[0] + 180 + MiscUtils.getDoubleRandom(-0.1D, 0.1D));
                     break;
