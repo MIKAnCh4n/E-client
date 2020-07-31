@@ -4,7 +4,7 @@ public class TokenGen {
         System.out.println(stringToNumber(""));
 
 //        try {
-//            TheAltening altening = new TheAltening("api-a7dx-wpwo-ub5f");
+//            TheAltening altening = new TheAltening("");
 //
 //            try {
 //                GuiAltManager.altService.switchService(AltService.EnumAltService.THEALTENING);
