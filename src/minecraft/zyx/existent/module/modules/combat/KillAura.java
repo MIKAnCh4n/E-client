@@ -289,10 +289,58 @@ public class KillAura extends Module {
             int color = target.hurtResistantTime > 15 ? Colors.getColor(new Color(255, 70, 70, 80)) : Colors.getColor(new Color(255, 255, 255, 80));
             if (((Options) settings.get(MODE).getValue()).getSelected().equalsIgnoreCase("Multi") || ((Options) settings.get(MODE).getValue()).getSelected().equalsIgnoreCase("MultiTick")) {
                 for (EntityLivingBase ent : targets) {
-                    drawESP(ent, color);
+                    double x = ent.lastTickPosX + (ent.posX - ent.lastTickPosX) * this.mc.timer.renderPartialTicks - RenderManager.renderPosX;
+                    double y = ent.lastTickPosY + (ent.posY - ent.lastTickPosY) * this.mc.timer.renderPartialTicks - RenderManager.renderPosY;
+                    double z = ent.lastTickPosZ + (ent.posZ - ent.lastTickPosZ) * this.mc.timer.renderPartialTicks - RenderManager.renderPosZ;
+                    x -= 0.5D;
+                    z -= 0.5D;
+                    y += ent.getEyeHeight() + 0.35D - (ent.isSneaking() ? 0.25D : 0.0D);
+                    double mid = 0.5D;
+                    GL11.glPushMatrix();
+                    GL11.glEnable(3042);
+                    GL11.glBlendFunc(770, 771);
+                    GL11.glTranslated(x + mid, y + mid, z + mid);
+                    GL11.glRotated((-ent.rotationYaw % 360.0F), 0.0D, 1.0D, 0.0D);
+                    GL11.glTranslated(-(x + mid), -(y + mid), -(z + mid));
+                    GL11.glDisable(3553);
+                    GL11.glEnable(2848);
+                    GL11.glDisable(2929);
+                    GL11.glDepthMask(false);
+                    RenderingUtils.glColor(color);
+                    RenderingUtils.drawBoundingBox(new AxisAlignedBB(x, y, z, x + 1.0D, y + 0.05D, z + 1.0D));
+                    GL11.glDisable(2848);
+                    GL11.glEnable(3553);
+                    GL11.glEnable(2929);
+                    GL11.glDepthMask(true);
+                    GL11.glDisable(3042);
+                    GL11.glPopMatrix();
                 }
             } else {
-                drawESP(target, color);
+                double x = target.lastTickPosX + (target.posX - target.lastTickPosX) * this.mc.timer.renderPartialTicks - RenderManager.renderPosX;
+                double y = target.lastTickPosY + (target.posY - target.lastTickPosY) * this.mc.timer.renderPartialTicks - RenderManager.renderPosY;
+                double z = target.lastTickPosZ + (target.posZ - target.lastTickPosZ) * this.mc.timer.renderPartialTicks - RenderManager.renderPosZ;
+                x -= 0.5D;
+                z -= 0.5D;
+                y += target.getEyeHeight() + 0.35D - (target.isSneaking() ? 0.25D : 0.0D);
+                double mid = 0.5D;
+                GL11.glPushMatrix();
+                GL11.glEnable(3042);
+                GL11.glBlendFunc(770, 771);
+                GL11.glTranslated(x + mid, y + mid, z + mid);
+                GL11.glRotated((-target.rotationYaw % 360.0F), 0.0D, 1.0D, 0.0D);
+                GL11.glTranslated(-(x + mid), -(y + mid), -(z + mid));
+                GL11.glDisable(3553);
+                GL11.glEnable(2848);
+                GL11.glDisable(2929);
+                GL11.glDepthMask(false);
+                RenderingUtils.glColor(color);
+                RenderingUtils.drawBoundingBox(new AxisAlignedBB(x, y, z, x + 1.0D, y + 0.05D, z + 1.0D));
+                GL11.glDisable(2848);
+                GL11.glEnable(3553);
+                GL11.glEnable(2929);
+                GL11.glDepthMask(true);
+                GL11.glDisable(3042);
+                GL11.glPopMatrix();
             }
         }
     }
