@@ -35,7 +35,7 @@ public class Criticals extends Module {
     public Criticals(String name, String desc, int keybind, Category category) {
         super(name, desc, keybind, category);
 
-        settings.put(MODE, new Setting(MODE, new Options("Mode", "Packet", new String[]{"Hypixel", "Packet", "Fake"}), "Critical method"));
+        settings.put(MODE, new Setting(MODE, new Options("Mode", "Packet", new String[]{"Hypixel", "AAC4", "Spartan", "Horizon", "NCP", "Packet", "Visual"}), "Critical method"));
         settings.put(HURTTIME, new Setting<>(HURTTIME, 15, "The hurtTime tick to crit at.", 1, 0, 20));
     }
 
@@ -88,8 +88,7 @@ public class Criticals extends Module {
                 switch (currentMode) {
                     case "Packet":
                         if (mc.thePlayer.onGround) {
-                            double off = 0.0625;
-                            mc.getConnection().sendPacket(new CPacketPlayer.Position(x, y + off, z, false));
+                            mc.getConnection().sendPacket(new CPacketPlayer.Position(x, y + 0.0625, z, false));
                             mc.getConnection().sendPacket(new CPacketPlayer.Position(x, y, z, false));
                             mc.thePlayer.onCriticalHit(entity);
                         }
@@ -103,7 +102,33 @@ public class Criticals extends Module {
                             }
                         }
                         break;
-                    case "Fake":
+                    case "NCP":
+                        if (timer.delay(500) && mc.thePlayer.onGround) {
+                            mc.thePlayer.connection.sendPacket(new CPacketPlayer.Position(mc.thePlayer.posX, mc.thePlayer.posY + 0.11, mc.thePlayer.posZ, true));
+                            mc.thePlayer.connection.sendPacket(new CPacketPlayer.Position(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ, false));
+                            mc.thePlayer.onCriticalHit(entity);
+                            timer.reset();
+                        }
+                        break;
+                    case "Horizon":
+                        if (mc.thePlayer.motionX == 0.0 && mc.thePlayer.motionZ == 0.0) {
+                            mc.thePlayer.connection.sendPacket(new CPacketPlayer.Position(mc.thePlayer.posX, mc.thePlayer.posY + 0.0001, mc.thePlayer.posZ, true));
+                            mc.thePlayer.connection.sendPacket(new CPacketPlayer.Position(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ, false));
+                            mc.thePlayer.onCriticalHit(entity);
+                        }
+                        break;
+                    case "Spartan":
+                        if (timer.delay(600)) {
+                            mc.thePlayer.connection.sendPacket(new CPacketPlayer.Position(mc.thePlayer.posX, mc.thePlayer.posY + 0.2, mc.thePlayer.posZ, true));
+                            mc.thePlayer.connection.sendPacket(new CPacketPlayer.Position(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ, false));
+                            mc.thePlayer.onCriticalHit(entity);
+                        }
+                        break;
+                    case "AAC4":
+                        mc.thePlayer.connection.sendPacket(new CPacketPlayer.Position(mc.thePlayer.posX, mc.thePlayer.posY + 0.0031311231111, mc.thePlayer.posZ, false));
+                        mc.thePlayer.onCriticalHit(entity);
+                        break;
+                    case "Visual":
                         mc.thePlayer.onCriticalHit(entity);
                         break;
                 }
@@ -118,9 +143,5 @@ public class Criticals extends Module {
                 stage = 0;
             }
         }
-    }
-
-    private static boolean canSetPositionUp(final double offset) {
-        return mc.theWorld.getEntitiesWithinAABBExcludingEntity(mc.thePlayer, mc.thePlayer.boundingBox.offset(0.0, offset, 0.0)).size() <= 0;
     }
 }
