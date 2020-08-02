@@ -94,6 +94,10 @@ public class Jesus extends Module {
                         }
                         stage++;
                     }
+                    if (isInLiquid() && !mc.thePlayer.isSneaking()){
+                       // mc.thePlayer.motionY = 0.166799999;
+                    	mc.thePlayer.motionY = 0.126799999;
+                    }
                 }
                 break;
             case "Flight":
@@ -117,15 +121,17 @@ public class Jesus extends Module {
                             mc.thePlayer.motionY = motionY;
                         this.stage++;
                     }
-                    if (isInLiquid() && !mc.thePlayer.isSneaking())
-                        mc.thePlayer.motionY = 0.166799999;
+                    if (isInLiquid() && !mc.thePlayer.isSneaking()){
+                       // mc.thePlayer.motionY = 0.166799999;
+                    	mc.thePlayer.motionY = 0.126799999;
+                    }
                 }
                 break;
         }
     }
     @EventTarget
     public void onPacket(EventPacket event) {
-        if (((Options) settings.get(MODE).getValue()).getSelected().equalsIgnoreCase("Dolphin")) {
+        if (((Options) settings.get(MODE).getValue()).getSelected().equalsIgnoreCase("Dolphin")||((Options) settings.get(MODE).getValue()).getSelected().equalsIgnoreCase("Flight")) {
             Packet<?> p = event.getPacket();
             if (p instanceof SPacketPlayerPosLook) {
                 stage = 0;
