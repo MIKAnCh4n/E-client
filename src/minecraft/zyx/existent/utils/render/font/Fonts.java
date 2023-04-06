@@ -1,11 +1,10 @@
 package zyx.existent.utils.render.font;
 
-import net.minecraft.client.Minecraft;
+import java.awt.Font;
+import java.io.InputStream;
+
 import net.minecraft.util.ResourceLocation;
 import zyx.existent.utils.MCUtil;
-
-import java.awt.*;
-import java.io.InputStream;
 
 public class Fonts implements MCUtil {
     public static CFontRenderer default25 = new CFontRenderer(getDefault(25), true, true);

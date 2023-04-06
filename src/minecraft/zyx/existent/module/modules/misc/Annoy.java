@@ -47,8 +47,8 @@ public class Annoy extends Module {
                     mc.thePlayer.rotationPitchHead = pitch;
                     break;
                 case "Spin":
-                    event.setYaw((float) Math.floor(spin2(speed)));
-                    event.setPitch(pitch);
+//                    event.setYaw((float) Math.floor(spin2(speed)));
+//                    event.setPitch(pitch);
                     mc.thePlayer.renderYawOffset = (float) Math.floor(spin2(speed));
                     mc.thePlayer.rotationYawHead = (float) Math.floor(spin2(speed));
                     mc.thePlayer.rotationPitchHead = pitch;

@@ -1,6 +1,14 @@
 package zyx.existent.gui.screen;
 
-import net.minecraft.client.gui.*;
+import java.awt.Color;
+import java.io.IOException;
+
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiMultiplayer;
+import net.minecraft.client.gui.GuiOptions;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiWorldSelection;
+import net.minecraft.client.gui.ScaledResolution;
 import zyx.existent.Existent;
 import zyx.existent.gui.altmanager.GuiAltManager;
 import zyx.existent.gui.screen.impl.GuiExButton;
@@ -9,8 +17,6 @@ import zyx.existent.utils.misc.LoginUtils;
 import zyx.existent.utils.render.RenderingUtils;
 import zyx.existent.utils.render.font.CFontRenderer;
 import zyx.existent.utils.render.font.Fonts;
-import java.awt.*;
-import java.io.IOException;
 
 public class GuiExMainMenu extends GuiScreen {
     private int width;
@@ -69,7 +75,7 @@ public class GuiExMainMenu extends GuiScreen {
                 this.mc.displayGuiScreen(new GuiOptions(this, this.mc.gameSettings));
                 break;
             case 4:
-                System.exit(0);
+                mc.shutdownMinecraftApplet();
                 break;
         }
         super.actionPerformed(button);

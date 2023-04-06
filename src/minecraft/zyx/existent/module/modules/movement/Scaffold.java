@@ -1,48 +1,35 @@
 package zyx.existent.module.modules.movement;
 
+import java.awt.Color;
+import java.util.Arrays;
+import java.util.List;
+
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.CPacketAnimation;
-import net.minecraft.network.play.client.CPacketEntityAction;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.MovementInput;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.lwjgl.opengl.GL11;
 import zyx.existent.event.EventTarget;
 import zyx.existent.event.events.EventRender2D;
-import zyx.existent.event.events.EventRender3D;
 import zyx.existent.event.events.EventSafeWalk;
 import zyx.existent.event.events.EventUpdate;
 import zyx.existent.module.Category;
 import zyx.existent.module.Module;
 import zyx.existent.module.data.Options;
 import zyx.existent.module.data.Setting;
-import zyx.existent.utils.ChatUtils;
-import zyx.existent.utils.MoveUtils;
-import zyx.existent.utils.RayTraceUtil;
 import zyx.existent.utils.RotationUtils;
 import zyx.existent.utils.misc.MiscUtils;
-import zyx.existent.utils.render.RenderingUtils;
 import zyx.existent.utils.render.font.CFontRenderer;
 import zyx.existent.utils.render.font.Fonts;
 import zyx.existent.utils.timer.Timer;
-
-import java.awt.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 
 public class Scaffold extends Module {
     public static final List<Block> invalidBlocks = Arrays.asList(Blocks.ENCHANTING_TABLE, Blocks.FURNACE, Blocks.CARPET, Blocks.CRAFTING_TABLE, Blocks.TRAPPED_CHEST, Blocks.CHEST, Blocks.DISPENSER, Blocks.AIR, Blocks.WATER, Blocks.LAVA, Blocks.FLOWING_WATER, Blocks.FLOWING_LAVA, Blocks.SAND, Blocks.SNOW_LAYER, Blocks.TORCH, Blocks.ANVIL, Blocks.JUKEBOX, Blocks.STONE_BUTTON, Blocks.WOODEN_BUTTON, Blocks.LEVER, Blocks.NOTEBLOCK, Blocks.STONE_PRESSURE_PLATE, Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE, Blocks.WOODEN_PRESSURE_PLATE, Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE, Blocks.STONE_SLAB, Blocks.WOODEN_SLAB, Blocks.STONE_SLAB2, Blocks.RED_MUSHROOM, Blocks.BROWN_MUSHROOM, Blocks.YELLOW_FLOWER, Blocks.RED_FLOWER, Blocks.ANVIL, Blocks.GLASS_PANE, Blocks.STAINED_GLASS_PANE, Blocks.IRON_BARS, Blocks.CACTUS, Blocks.LADDER, Blocks.WEB);
@@ -94,7 +81,7 @@ public class Scaffold extends Module {
         double posY;
 
         if (GameSettings.isKeyDown(mc.gameSettings.keyBindSneak) && (Boolean) settings.get(DOWN).getValue()) {
-            MoveUtils.setMotion(MoveUtils.getBaseMoveSpeed() / 0.2);
+    //        MoveUtils.setMotion(MoveUtils.getBaseMoveSpeed() / 0.2);
             mc.gameSettings.keyBindSneak.pressed = false;
             isSneaking = true;
         } else {
@@ -171,6 +158,7 @@ public class Scaffold extends Module {
             if (eventUpdate.isPre()) {
                 if (mc.gameSettings.keyBindJump.isKeyDown() && (Boolean) settings.get(TOWER).getValue()) {
                     if (!mc.thePlayer.isMoving()) {
+                    	//TODO a
                         mc.thePlayer.motionX = 0.0D;
                         mc.thePlayer.motionY = 0.41982D;
                         mc.thePlayer.motionZ = 0.0D;

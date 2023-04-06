@@ -1,26 +1,32 @@
 package zyx.existent.module.modules.misc;
 
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.block.BlockAir;
-import net.minecraft.block.BlockStone;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.init.Blocks;
 import net.minecraft.network.play.client.CPacketAnimation;
-import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.network.play.client.CPacketPlayerDigging;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.*;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import zyx.existent.event.EventTarget;
-import zyx.existent.event.events.*;
+import zyx.existent.event.events.EventBlockBreaking;
+import zyx.existent.event.events.EventPacketSend;
+import zyx.existent.event.events.EventRender3D;
+import zyx.existent.event.events.EventUpdate;
 import zyx.existent.module.Category;
 import zyx.existent.module.Module;
 import zyx.existent.module.data.Options;
 import zyx.existent.module.data.Setting;
 import zyx.existent.utils.RayTraceUtil;
 import zyx.existent.utils.RotationUtils;
-import zyx.existent.utils.render.Colors;
+import zyx.existent.utils.render.RenderHelper;
 import zyx.existent.utils.render.RenderingUtils;
 import zyx.existent.utils.timer.Timer;
 
@@ -35,13 +41,17 @@ public class Civbreak2 extends Module {
     public final Timer timer = new Timer();
 
     private final String MODE = "MODE";
+    private final String FILL = "FILL";
+    private final String Select = "Select";
     private final String REACH = "REACH";
     private final String DELAY = "DELAY";
 
     public Civbreak2(String name, String desc, int keybind, Category category) {
         super(name, desc, keybind, category);
 
-        settings.put(MODE, new Setting<>(MODE, new Options("Mode", "Zigga", new String[]{"Zigga", "Nigga", "NaeNi"}), "Civbreak2 method"));
+        settings.put(MODE, new Setting<>(MODE, new Options("Mode", "Zigga", new String[]{"Zigga", "Legit", "Safe", "NaeNi"}), "Civbreak2 method"));
+        settings.put(FILL, new Setting<>(FILL, false, "Render Fill"));
+        settings.put(Select, new Setting<>(Select, false, "Auto Select"));
         settings.put(DELAY, new Setting<>(DELAY, 5, "CivDelay.", 1, 1, 10));
         settings.put(REACH, new Setting<>(REACH, 5, "Range.", 1, 1, 10));
     }
@@ -61,7 +71,7 @@ public class Civbreak2 extends Module {
             if (nexus != null) {
                 this.pos = nexus;
                 this.side = EnumFacing.UP;
-            }
+           }
             if (this.pos != null) {
                 if (mc.thePlayer.getDistance(this.pos.getX(), this.pos.getY(), this.pos.getZ()) > ((Number) settings.get(REACH).getValue()).floatValue()) {
                     this.packet = null;
@@ -93,35 +103,38 @@ public class Civbreak2 extends Module {
                         mc.playerController.clickBlock(this.pos, side);
                     }
                     mc.thePlayer.swingArm(EnumHand.MAIN_HAND);
+//                    mc.thePlayer.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
                     mc.playerController.onPlayerDamageBlock(this.pos, side);
                 } else {
-//                    event.setOnGround(true);
+                    event.setOnGround(true);
 
                     switch (((Options) settings.get(MODE).getValue()).getSelected()) {
                         case "Zigga":
-                            if (mc.theWorld.getBlockState(this.pos).getBlock() != Blocks.AIR) {
-                                this.ticks = ((Number) settings.get(DELAY).getValue()).intValue();
-                                mc.thePlayer.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
-                                mc.thePlayer.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, this.pos, side));
-                                mc.thePlayer.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.ABORT_DESTROY_BLOCK, this.pos, EnumFacing.UP));
-                            }
+                            	mc.thePlayer.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
+                            	mc.thePlayer.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, this.pos, side));
                             break;
-                        case "Nigga":
+                        case "Safe":
                             if (this.ticks > 0) {
                                 --this.ticks;
                                 mc.thePlayer.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.ABORT_DESTROY_BLOCK, this.pos, EnumFacing.UP));
                             } else {
-                                this.ticks = 3;
                                 mc.thePlayer.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
                                 mc.thePlayer.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, this.pos, side));
                                 mc.thePlayer.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.ABORT_DESTROY_BLOCK, this.pos, EnumFacing.UP));
+                                ticks = ((Number) settings.get(DELAY).getValue()).intValue();
                             }
                             break;
                         case "NaeNi":
-                            mc.thePlayer.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
+//                            mc.thePlayer.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
+                            mc.thePlayer.swingArm(EnumHand.MAIN_HAND);
                             mc.thePlayer.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, this.pos, side));
                             mc.thePlayer.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
-                            mc.thePlayer.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.ABORT_DESTROY_BLOCK, this.pos, EnumFacing.UP));
+//                            mc.thePlayer.swingArm(EnumHand.MAIN_HAND);
+                            mc.thePlayer.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.ABORT_DESTROY_BLOCK, this.pos, EnumFacing.DOWN));
+                            break;
+                        case "Legit":
+                            mc.thePlayer.swingArm(EnumHand.MAIN_HAND);
+                            mc.playerController.onPlayerDamageBlock(this.pos, side);
                             break;
                     }
                 }
@@ -144,11 +157,11 @@ public class Civbreak2 extends Module {
             if (this.pos != null && MathHelper.sqrt(mc.thePlayer.getDistanceSq(this.pos)) > ((Number) settings.get(REACH).getValue()).floatValue()) {
                 GL11.glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
             } else if (mc.theWorld.getBlockState(this.pos).getBlock() instanceof BlockAir) {
-                GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+                GL11.glColor4f(1.0f, 0.7f, 0.0f, 1.0f);
             } else if (mc.theWorld.getBlockState(this.pos).getBlock() == Blocks.BEDROCK) {
                 GL11.glColor4f(0.4f, 0.4f, 0.4f, 1.0f);
             } else {
-                GL11.glColor4f(0.5f, 1.0f, 0.5f, 1.0f);
+                GL11.glColor4f(0.0F, 1.0F, 0.2F, 1.0f);
             }
             double var10000 = this.pos.getX();
             mc.getRenderManager();
@@ -162,16 +175,20 @@ public class Civbreak2 extends Module {
             final double xo = 1.0;
             final double yo = 1.0;
             final double zo = 1.0;
+            RenderGlobal.drawSelectionBoundingBox(new AxisAlignedBB(var10001, y, z, var10001 + xo, y + yo, z + zo));
             if (this.pos != null && MathHelper.sqrt(mc.thePlayer.getDistanceSq(this.pos)) > ((Number) settings.get(REACH).getValue()).floatValue()) {
                 GL11.glColor4f(1.0f, 0.0f, 0.0f, 0.2f);
             } else if (mc.theWorld.getBlockState(this.pos).getBlock() instanceof BlockAir) {
-                GL11.glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
+            	GL11.glColor4f(1.0f, 0.7f, 0.0f, 0.11f);
             } else if (mc.theWorld.getBlockState(this.pos).getBlock() == Blocks.BEDROCK) {
                 GL11.glColor4f(0.4f, 0.4f, 0.4f, 0.2f);
             } else {
-                RenderingUtils.glColor(Colors.rainbow(2000, 0.8f, 1.0f), 0.2f);
+                RenderHelper.drawLines(new AxisAlignedBB(var10001, y, z, var10001 + xo, y + yo, z + zo));
+            	GL11.glColor4f(0.0F, 1.0F, 0.2F, 0.11f);
             }
+            if ((boolean) settings.get(FILL).getValue()) {
             RenderingUtils.drawFilledBox(new AxisAlignedBB(var10001, y, z, var10001 + xo, y + yo, z + zo));
+            }
             GL11.glDepthMask(true);
             GL11.glDisable(2848);
             GL11.glEnable(2929);
@@ -200,16 +217,20 @@ public class Civbreak2 extends Module {
 
     public BlockPos getNexus() {
         BlockPos pos = null;
-        for (int x = -7; x < 7; ++x) {
-            for (int y = -7; y < 7; ++y) {
-                for (int z = -7; z < 7; ++z) {
-                    pos = new BlockPos(mc.thePlayer.posX + x, mc.thePlayer.posY + y, mc.thePlayer.posZ + z);
-                    if (mc.theWorld.getBlockState(pos).getBlock() == Blocks.END_STONE) {
-                        return pos;
-                    }
-                }
-            }
-        }
+        if (!(boolean) settings.get(Select).getValue()) {
+        	return pos;
+		} else {
+	        for (int x = -7; x < 7; ++x) {
+	            for (int y = -7; y < 7; ++y) {
+	                for (int z = -7; z < 7; ++z) {
+	                    pos = new BlockPos(mc.thePlayer.posX + x, mc.thePlayer.posY + y, mc.thePlayer.posZ + z);
+	                    if (mc.theWorld.getBlockState(pos).getBlock() == Blocks.END_STONE) {
+	                        return pos;
+	                    }
+	                }
+	            }
+	        }
+		}
         return this.pos;
     }
 }

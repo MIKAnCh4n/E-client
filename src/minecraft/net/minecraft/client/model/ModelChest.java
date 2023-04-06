@@ -30,6 +30,7 @@ public class ModelChest extends ModelBase {
         this.chestBelow.addBox(0.0F, 0.0F, 0.0F, 14, 10, 14, 0.0F);
         this.chestBelow.rotationPointX = 1.0F;
         this.chestBelow.rotationPointY = 6.0F;
+//      this.chestBelow.rotationPointY = 20.0F;
         this.chestBelow.rotationPointZ = 1.0F;
     }
 

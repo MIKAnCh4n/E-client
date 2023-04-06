@@ -1,19 +1,16 @@
 package zyx.existent.module.modules.player;
 
+import org.lwjgl.input.Keyboard;
+
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.inventory.GuiEditSign;
 import net.minecraft.client.settings.KeyBinding;
-import org.lwjgl.input.Keyboard;
 import zyx.existent.event.EventTarget;
 import zyx.existent.event.events.EventRender2D;
 import zyx.existent.event.events.EventTick;
-import zyx.existent.event.events.EventUpdate;
 import zyx.existent.module.Category;
 import zyx.existent.module.Module;
 import zyx.existent.module.data.Setting;
-import zyx.existent.utils.ChatUtils;
-
-import java.util.Objects;
 
 public class InvMove extends Module {
     private String ROTATE = "ROTATION";
@@ -28,7 +25,7 @@ public class InvMove extends Module {
 
     @EventTarget
     public void onUpdate(EventTick event) {
-        KeyBinding[] keys = new KeyBinding[]{mc.gameSettings.keyBindJump, mc.gameSettings.keyBindForward, mc.gameSettings.keyBindBack, mc.gameSettings.keyBindLeft, mc.gameSettings.keyBindRight, mc.gameSettings.keyBindSprint, mc.gameSettings.keyBindSneak};
+        KeyBinding[] keys = new KeyBinding[]{mc.gameSettings.keyBindJump, mc.gameSettings.keyBindForward, mc.gameSettings.keyBindBack, mc.gameSettings.keyBindLeft, mc.gameSettings.keyBindRight, mc.gameSettings.keyBindSprint};
         if (mc.currentScreen != null) {
             if (mc.currentScreen instanceof GuiChat || mc.currentScreen instanceof GuiEditSign) {
                 return;

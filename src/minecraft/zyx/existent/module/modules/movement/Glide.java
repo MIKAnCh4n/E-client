@@ -1,6 +1,5 @@
 package zyx.existent.module.modules.movement;
 
-import net.minecraft.util.MovementInput;
 import zyx.existent.event.EventTarget;
 import zyx.existent.event.events.EventMove;
 import zyx.existent.event.events.EventUpdate;
@@ -30,9 +29,9 @@ public class Glide extends Module {
         switch (((Options) settings.get(MODE).getValue()).getSelected()) {
             case "Hypixel":
             case "Shotbow":
-                if (mc.thePlayer.onGround)
-                    mc.thePlayer.motionY = 0.42;
-                MoveUtils.setMotion(0.3 + MoveUtils.getSpeedEffect() * 0.05f);
+//                if (mc.thePlayer.onGround)
+//                    mc.thePlayer.motionY = 0.42;
+//                MoveUtils.setMotion(0.3 + MoveUtils.getSpeedEffect() * 0.05f);
         }
         super.onEnable();
     }

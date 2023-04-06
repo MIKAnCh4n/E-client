@@ -1,25 +1,64 @@
 package net.minecraft.client.main;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.mojang.authlib.properties.PropertyMap;
-import com.mojang.authlib.properties.PropertyMap.Serializer;
 import java.io.File;
 import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.Proxy.Type;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.mojang.authlib.properties.PropertyMap;
+import com.mojang.authlib.properties.PropertyMap.Serializer;
+
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.Session;
+import zyx.existent.module.modules.visual.KillCounter;
 
 public class Main {
     public static void main(String[] p_main_0_) {
+    	/*
+    	https://blogs.osdn.jp/2019/09/11/java-userdir.html
+    	https://blogs.osdn.jp/2017/09/24/runnable-jar.html
+    	https://softwareengineering.stackexchange.com/questions/211073/why-does-java-not-put-the-filename-in-args
+    	*/
+    	try {
+			System.out.println("Main.getProtectionDomain: " + Paths.get(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
+//			System.out.println(Main.class.getProtectionDomain().getCodeSource().getLocation());
+//			System.out.println(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+		} catch (URISyntaxException e2) {
+			// TODO 自動生成された catch ブロック
+			e2.printStackTrace();
+		}
+    	System.out.println("java.class.path: " + System.getProperty("java.class.path"));
+    	System.out.println("java.library.path: " + System.getProperty("java.library.path"));
+    	System.out.println("user.dir: " + System.getProperty("user.dir"));
+    	Path p1 = Paths.get("");
+//    	System.out.println("空の相対パス: " + p1.toString());
+    	Path p2 = p1.toAbsolutePath();
+    	System.out.println("toAbsolutePath (カレントディレクトリからなのでuser.dirと同じになるはず): " + p2.toString());
+    	try {
+			System.out.println("KillCounter.getProtectionDomain: " + Paths.get(KillCounter.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
+		} catch (URISyntaxException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
+//    	VortexのInjectionAPIにあったやつ 消せばエラーが起きずに起動する
+//    	try {
+//			System.setProperty("org.lwjgl.librarypath", Paths.get(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent().toString() + "\\natives");
+//		} catch (URISyntaxException e1) {
+//			e1.printStackTrace();
+//		}
+    	System.out.println("java.library.path: " + System.getProperty("java.library.path"));
         OptionParser optionparser = new OptionParser();
         optionparser.allowsUnrecognizedOptions();
         optionparser.accepts("demo");

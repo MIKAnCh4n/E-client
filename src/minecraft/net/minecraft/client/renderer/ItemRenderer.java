@@ -1,7 +1,11 @@
 package net.minecraft.client.renderer;
 
-import com.google.common.base.MoreObjects;
 import java.util.Objects;
+
+import org.lwjgl.opengl.GL11;
+
+import com.google.common.base.MoreObjects;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -34,15 +38,12 @@ import optifine.Config;
 import optifine.DynamicLights;
 import optifine.Reflector;
 import optifine.ReflectorForge;
-import org.lwjgl.opengl.GL11;
 import shadersmod.client.Shaders;
 import zyx.existent.Existent;
 import zyx.existent.module.Module;
 import zyx.existent.module.data.Options;
 import zyx.existent.module.modules.visual.Animations;
 import zyx.existent.module.modules.visual.Chams;
-import zyx.existent.utils.ChatUtils;
-import zyx.existent.utils.misc.MiscUtils;
 
 public class ItemRenderer {
     private static final ResourceLocation RES_MAP_BACKGROUND = new ResourceLocation("textures/map/map_background.png");

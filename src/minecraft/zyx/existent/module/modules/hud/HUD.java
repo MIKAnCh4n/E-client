@@ -1,5 +1,13 @@
 package zyx.existent.module.modules.hud;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.resources.I18n;
@@ -7,8 +15,6 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.math.MathHelper;
 import optifine.CustomColors;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.GL11;
 import zyx.existent.Existent;
 import zyx.existent.event.EventTarget;
 import zyx.existent.event.events.EventRender2D;
@@ -20,7 +26,6 @@ import zyx.existent.module.data.Setting;
 import zyx.existent.module.modules.misc.StreamerMode;
 import zyx.existent.module.modules.movement.Scaffold;
 import zyx.existent.module.modules.visual.Cosmetics;
-import zyx.existent.utils.MathUtils;
 import zyx.existent.utils.misc.LoginUtils;
 import zyx.existent.utils.misc.MiscUtils;
 import zyx.existent.utils.render.Colors;
@@ -28,12 +33,6 @@ import zyx.existent.utils.render.RenderingUtils;
 import zyx.existent.utils.render.animate.Translate;
 import zyx.existent.utils.render.font.CFontRenderer;
 import zyx.existent.utils.render.font.Fonts;
-
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
 
 public class HUD extends Module {
     private double lastPosX = Double.NaN;

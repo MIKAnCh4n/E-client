@@ -1,15 +1,9 @@
 package zyx.existent.utils.misc;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Scanner;
 
 public class LoginUtils {
@@ -26,12 +20,14 @@ public class LoginUtils {
         while (s.hasNext()) {
             String[] s2 = s.nextLine().split(":");
             name = s2[0];
-            if ((hwid.equalsIgnoreCase(s2[1])) && (this.code.equalsIgnoreCase(s2[2]))) {
+            if ((this.code.equalsIgnoreCase(s2[2]))) {
                 System.out.println("Welcome " + s2[0]);
+                s.close();
                 return true;
             }
         }
         System.out.println("Login Failed");
+        s.close();
         return false;
     }
 
@@ -52,6 +48,7 @@ public class LoginUtils {
                 }
                 ++i;
             }
+            System.out.print(s);
             return s;
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
             e.printStackTrace();

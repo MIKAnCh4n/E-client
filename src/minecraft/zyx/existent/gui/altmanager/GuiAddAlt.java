@@ -1,19 +1,24 @@
 package zyx.existent.gui.altmanager;
 
+import java.awt.Color;
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.io.IOException;
+import java.net.Proxy;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import org.lwjgl.input.Keyboard;
+
 import com.mojang.authlib.Agent;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilUserAuthentication;
 
-import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.io.IOException;
-import java.net.Proxy;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.text.TextFormatting;
-import org.lwjgl.input.Keyboard;
 import zyx.existent.Existent;
 import zyx.existent.gui.altmanager.althening.api.AltService;
 import zyx.existent.gui.screen.impl.GuiExButton;

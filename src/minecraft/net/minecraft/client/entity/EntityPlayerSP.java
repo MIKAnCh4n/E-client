@@ -3,6 +3,7 @@ package net.minecraft.client.entity;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+
 import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
@@ -93,6 +94,7 @@ import zyx.existent.module.Module;
 import zyx.existent.module.data.Options;
 import zyx.existent.module.modules.misc.ChatFilter;
 import zyx.existent.module.modules.movement.NoSlowDown;
+import zyx.existent.utils.ChatUtils;
 
 public class EntityPlayerSP extends AbstractClientPlayer {
     public final NetHandlerPlayClient connection;
@@ -128,7 +130,7 @@ public class EntityPlayerSP extends AbstractClientPlayer {
      * The last pitch value which was transmitted to the server, used to determine when the pitch changes and needs to
      * be re-transmitted
      */
-    private float lastReportedPitch;
+    public float lastReportedPitch;
     private boolean prevOnGround;
 
     /**
@@ -403,6 +405,7 @@ public class EntityPlayerSP extends AbstractClientPlayer {
      */
     protected void damageEntity(DamageSource damageSrc, float damageAmount) {
         if (!this.isEntityInvulnerable(damageSrc)) {
+        	ChatUtils.printChat(String.valueOf(damageAmount));
             this.setHealth(this.getHealth() - damageAmount);
         }
     }
@@ -429,6 +432,7 @@ public class EntityPlayerSP extends AbstractClientPlayer {
             float f = this.getHealth() - health;
 
             if (f <= 0.0F) {
+//            	ChatUtils.printChat(String.valueOf(health));
                 this.setHealth(health);
 
                 if (f < 0.0F) {

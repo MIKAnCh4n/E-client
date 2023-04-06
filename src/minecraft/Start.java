@@ -1,5 +1,4 @@
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import net.minecraft.client.main.Main;
@@ -7,19 +6,21 @@ import net.minecraft.client.main.Main;
 public class Start {
 
     public static void main(String[] args) {
-        Main.main(concat(new String[]{"--version", "Existent", "--accessToken", "0", "--assetsDir", "assets", "--assetIndex", "1.12", "--userProperties", "{}"}, args));
+        Main.main(concat(new String[]{"--version", "Existent", "--assetsDir", "assets", "--assetIndex", "1.12", "--userProperties", "{}"}, args));
     }
 
     public static <T> T[] concat(T[] first, T[] second) {
         T[] result = Arrays.copyOf(first, first.length + second.length);
+        System.out.println(Arrays.toString(result));
         System.arraycopy(second, 0, result, first.length, second.length);
+        System.out.println(Arrays.toString(result));
         return result;
     }
 
     public static void run() {
         File workingDirectory;
         String userHome = System.getProperty("user.home", ".");
-        switch (Start.getPlatform()) {
+        switch (getPlatform()) {
             case LINUX: {
                 workingDirectory = new File(userHome, ".minecraft/");
                 break;

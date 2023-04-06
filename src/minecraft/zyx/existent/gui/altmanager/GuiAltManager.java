@@ -1,14 +1,28 @@
 package zyx.existent.gui.altmanager;
 
-import net.minecraft.client.gui.*;
+import java.awt.Color;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.GL11;
+
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiMultiplayer;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.multiplayer.GuiConnecting;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.text.TextFormatting;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
 import zyx.existent.Existent;
 import zyx.existent.gui.altmanager.althening.GuiAlthening;
 import zyx.existent.gui.altmanager.althening.api.AltService;
@@ -20,14 +34,6 @@ import zyx.existent.utils.render.RenderingUtils;
 import zyx.existent.utils.render.font.CFontRenderer;
 import zyx.existent.utils.render.font.Fonts;
 import zyx.existent.utils.timer.Timer;
-
-import java.awt.*;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-import java.util.stream.Collectors;
 
 public class GuiAltManager extends GuiScreen {
     private final Timer animtimer = new Timer();
@@ -105,7 +111,7 @@ public class GuiAltManager extends GuiScreen {
                 this.mc.displayGuiScreen(new GuiMultiplayer(this));
                 break;
             case 4545:
-                this.mc.displayGuiScreen(new GuiConnecting(this, this.mc, new ServerData(I18n.format("selectServer.defaultName"), "play.hypixel.net", false)));
+                this.mc.displayGuiScreen(new GuiConnecting(this, this.mc, new ServerData(I18n.format("selectServer.defaultName"), "shotbow.net", false)));
                 break;
         }
     }
@@ -253,8 +259,9 @@ public class GuiAltManager extends GuiScreen {
         this.buttonList.add(new GuiExButton(7, this.width / 2 - 190, this.height - 24, 60, 20, "Back"));
         this.buttonList.add(new GuiExButton(8, this.width / 2 - 190, this.height - 48, 60, 20, "Reload"));
         this.buttonList.add(new GuiExButton(1919, this.width / 2 + 195, this.height - 48, 100, 20, "TheAlthening"));
+        this.buttonList.add(new GuiExButton(2020, this.width / 2 + 195, this.height - 24, 100, 20, "TokenLogin"));
         this.buttonList.add(new GuiExButton(8931, this.width / 2 + 190, 5, 100, 20, "MultiPlayer"));
-        this.buttonList.add(new GuiExButton(4545, this.width / 2 + 300, 5, 100, 20, "Connect Hypixel"));
+        this.buttonList.add(new GuiExButton(4545, this.width / 2 + 300, 5, 100, 20, "Go to shotbow"));
         this.login.enabled = false;
         this.remove.enabled = false;
         this.rename.enabled = false;

@@ -1,31 +1,23 @@
 package zyx.existent.module.modules.movement;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockGlass;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.network.play.client.CPacketKeepAlive;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.MovementInput;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import zyx.existent.Existent;
 import zyx.existent.event.EventTarget;
-import zyx.existent.event.events.*;
+import zyx.existent.event.events.EventMove;
+import zyx.existent.event.events.EventPacketSend;
+import zyx.existent.event.events.EventUpdate;
 import zyx.existent.module.Category;
 import zyx.existent.module.Module;
 import zyx.existent.module.data.Options;
 import zyx.existent.module.data.Setting;
-import zyx.existent.utils.ChatUtils;
-import zyx.existent.utils.MathUtils;
+import zyx.existent.module.modules.misc.Blink;
 import zyx.existent.utils.MoveUtils;
 import zyx.existent.utils.PlayerUtils;
-import zyx.existent.utils.misc.MiscUtils;
-import zyx.existent.utils.pathfinding.CustomVec3d;
-import zyx.existent.utils.timer.TickTimer;
 import zyx.existent.utils.timer.Timer;
 
 public class Flight extends Module {
@@ -72,6 +64,7 @@ public class Flight extends Module {
                 mc.thePlayer.motionZ *= 0.0;
                 break;
             case "Shotbow":
+            	/*
                 switch (((Options) settings.get(SHOTBOWMODE).getValue()).getSelected()) {
                     case "Normal":
                         MoveUtils.setMotion(0.3 + MoveUtils.getSpeedEffect() * 0.05f);
@@ -83,6 +76,7 @@ public class Flight extends Module {
                         level = 1;
                         timer.reset();
                 }
+                */
                 break;
             case "Float":
                 MoveUtils.setMotion(0.3 + MoveUtils.getSpeedEffect() * 0.05f);
@@ -105,7 +99,9 @@ public class Flight extends Module {
                 mc.thePlayer.motionY = -0.003;
             }
         }
-
+        if(Existent.getModuleManager().getClazz(Blink.class).isEnabled()) {
+        	Existent.getModuleManager().getClazz(Blink.class).toggle();
+        }
         this.y = 0.0D;
         this.lastDist = 0.0D;
         this.moveSpeed = 0.0D;
@@ -199,6 +195,8 @@ public class Flight extends Module {
                 }
                 break;
             case "Shotbow":
+
+            	/*
                 if (shotbowmode.equalsIgnoreCase("Zoom")) {
                     ++this.counter;
                     if (!mc.thePlayer.onGround) {
@@ -216,6 +214,7 @@ public class Flight extends Module {
                 } else if (shotbowmode.equalsIgnoreCase("Normal")) {
                     mc.thePlayer.motionY = -0.003D;
                 }
+                */
                 break;
             case "Float":
                 ++counter;
@@ -304,6 +303,33 @@ public class Flight extends Module {
                 ++this.stage;
                 break;
             case "Shotbow":
+            	if(Blink.packets.size() > 8) {
+            		if(Existent.getModuleManager().getClazz(Blink.class).isEnabled()) {
+                    	Existent.getModuleManager().getClazz(Blink.class).toggle();
+                    }
+            	}
+            	if(mc.gameSettings.keyBindJump.isKeyDown()&&mc.thePlayer.ticksExisted % 15 == 0) {
+
+            		if(!Existent.getModuleManager().getClazz(Blink.class).isEnabled()) {
+                		Existent.getModuleManager().getClazz(Blink.class).toggle();
+                    }
+            		 mc.thePlayer.motionY = 1.42f;
+
+            	}
+            	if(mc.thePlayer.motionY < -0.3) {
+            		//mc.thePlayer.motionY = 0.42f;
+            	//	mc.timer.timerSpeed = 0.3f;
+            		float f = mc.thePlayer.rotationYaw * 0.017453292F;
+            		event.setY(mc.thePlayer.motionY = 0.6f);
+            		event.setX(mc.thePlayer.motionX -= (double) (MathHelper.sin(f) * 5.0F));
+            		event.setZ(mc.thePlayer.motionZ += (double) (MathHelper.cos(f) * 5.0F));
+            		//知恵遅れはブーストにジャンプを複数回使用しますSTFU
+            		if(!Existent.getModuleManager().getClazz(Blink.class).isEnabled()) {
+                    	Existent.getModuleManager().getClazz(Blink.class).toggle();
+                    }
+            	}
+            	//MoveUtils.setMotion(event,0.5);
+            	/*
                 if (shotbowmode.equalsIgnoreCase("Zoom")) {
                     if (level != 1) {
                         if (level == 2) {
@@ -351,6 +377,7 @@ public class Flight extends Module {
                     if (mc.thePlayer.moveForward != 0.0F || mc.thePlayer.moveStrafing != 0.0F)
                         this.stage++;
                 }
+                */
                 break;
             case "Vanilla":
             case "Float":

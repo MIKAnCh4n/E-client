@@ -1,5 +1,6 @@
 package zyx.existent.utils;
 
+import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 
 public class Location implements MCUtil {
@@ -65,7 +66,7 @@ public class Location implements MCUtil {
         return this;
     }
 
-    public net.minecraft.block.Block getBlock() {
+    public Block getBlock() {
         return mc.theWorld.getBlockState(toBlockPos()).getBlock();
     }
 
@@ -120,5 +121,17 @@ public class Location implements MCUtil {
 
     public BlockPos toBlockPos() {
         return new BlockPos(getX(), getY(), getZ());
+    }
+
+    public double distanceTo(Location loc) {
+        double dx = loc.x - this.x;
+        double dz = loc.z - this.z;
+        double dy = loc.y - this.y;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    public double distanceToY(Location loc) {
+        double dy = loc.y - this.y;
+        return Math.sqrt(dy * dy);
     }
 }

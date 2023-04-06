@@ -1,0 +1,13 @@
+/*.sh
+/*bat
+/jars/*
+!/jars/libraries/
+/bin/
+/conf/
+/docs/
+/eclipse/
+/lib/
+/logs/
+/reobf/
+/runtime/
+/temp/

@@ -10,6 +10,10 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 public class RotationUtils implements MCUtil {
+    public static float getAngleDistance(Entity entity) {
+        return Math.abs(normalizeAngle(getYaw(entity)));
+    }
+
     public final Vec3d getVectorForRotation(float pitch, float yaw) {
         float f = MathHelper.cos(-yaw * 0.017453292F - 3.1415927F);
         float f1 = MathHelper.sin(-yaw * 0.017453292F - 3.1415927F);
@@ -67,6 +71,72 @@ public class RotationUtils implements MCUtil {
         return getRotations(entity.posX + MathUtils.randomNumber(0.03D, -0.03D), entity.posY + entity.getEyeHeight() - 0.4D + MathUtils.randomNumber(0.07D, -0.07D), entity.posZ + MathUtils.randomNumber(0.03D, -0.03D));
     }
 
+    public static float[] getRotations(Entity entity, double maxRange) {
+        if (entity == null) {
+            return null;
+        }
+        double diffX = entity.posX - mc.thePlayer.posX;
+        double diffZ = entity.posZ - mc.thePlayer.posZ;
+        Location BestPos = new Location(entity.posX, entity.posY, entity.posZ);
+        Location myEyePos = new Location(mc.thePlayer.posX, mc.thePlayer.posY + mc.thePlayer.getEyeHeight(), mc.thePlayer.posZ);
+        for (double i = entity.boundingBox.minY + 0.7; i < entity.boundingBox.maxY - 0.1; i += 0.1) {
+            if (myEyePos.distanceTo(new Location(entity.posX, i, entity.posZ)) < myEyePos.distanceTo(BestPos)) {
+                BestPos = new Location(entity.posX, i, entity.posZ);
+            }
+        }
+
+        if (myEyePos.distanceTo(BestPos) > maxRange) {
+            return null;
+        }
+        double diffY = BestPos.getY() - (mc.thePlayer.posY + mc.thePlayer.getEyeHeight());
+        double dist = MathHelper.sqrt(diffX * diffX + diffZ * diffZ);
+        float yaw = (float) (Math.atan2(diffZ, diffX) * 180.0 / 3.141592653589793) - 90.0f;
+        float pitch = (float) (-(Math.atan2(diffY, dist) * 180.0 / 3.141592653589793));
+        return new float[]{yaw, pitch};
+    }
+
+    public static float[] smoothRotation(float[] currentRotations, float[] neededRotations, float rotationSpeed) {
+        final float yawDiff = getDifference(neededRotations[0], currentRotations[0]);
+        final float pitchDiff = getDifference(neededRotations[1], currentRotations[1]);
+
+        float rotationSpeedYaw = rotationSpeed;
+
+        if (yawDiff > rotationSpeed) {
+            rotationSpeedYaw = rotationSpeed;
+        } else {
+            rotationSpeedYaw = Math.max(yawDiff, -rotationSpeed);
+        }
+
+        float rotationSpeedPitch = rotationSpeed;
+
+        if (pitchDiff > rotationSpeed) {
+            rotationSpeedPitch = rotationSpeed;
+        } else {
+            rotationSpeedPitch = Math.max(pitchDiff, -rotationSpeed);
+        }
+
+        final float newYaw = currentRotations[0] + rotationSpeedYaw;
+        final float newPitch = currentRotations[1] + rotationSpeedPitch;
+
+        return new float[] { newYaw, newPitch };
+    }
+
+    public static float[] getRotations(Entity entity, boolean predict, double predictionFactor) {
+        final Vec3d playerPos = new Vec3d(mc.thePlayer.posX + (predict ? mc.thePlayer.motionX * predictionFactor : 0), mc.thePlayer.posY + (entity instanceof EntityLivingBase ? mc.thePlayer.getEyeHeight() : 0) + (predict ? mc.thePlayer.motionY * predictionFactor : 0), mc.thePlayer.posZ + (predict ? mc.thePlayer.motionZ * predictionFactor : 0));
+        final Vec3d entityPos = new Vec3d(entity.posX + (predict ? (entity.posX - entity.prevPosX) * predictionFactor : 0), entity.posY + (predict ? (entity.posY - entity.prevPosY) * predictionFactor : 0), entity.posZ + (predict ? (entity.posZ - entity.prevPosZ) * predictionFactor : 0));
+
+        final double diffX = entityPos.xCoord - playerPos.xCoord;
+        final double diffY = (entity instanceof EntityLivingBase ? entityPos.yCoord + ((EntityLivingBase) entity).getEyeHeight() - playerPos.yCoord : entityPos.yCoord - playerPos.yCoord);
+        final double diffZ = entityPos.zCoord - playerPos.zCoord;
+
+        final double dist = Math.sqrt(diffX * diffX + diffZ * diffZ);
+
+        final double yaw = Math.toDegrees(Math.atan2(diffZ, diffX)) - 90.0;
+        final double pitch = -Math.toDegrees(Math.atan2(diffY, dist));
+
+        return new float[] {(float) yaw, (float) pitch};
+    }
+
     public static float[] getRotations(EntityLivingBase ent) {
         double x = ent.posX;
         double z = ent.posZ;
@@ -76,6 +146,19 @@ public class RotationUtils implements MCUtil {
 
     public static float[] getAngles(Entity e) {
         return new float[]{getYawChangeToEntity(e) + mc.thePlayer.rotationYaw, getPitchChangeToEntity(e) + mc.thePlayer.rotationPitch};
+    }
+
+    public static float getYaw(Entity var0) {
+        double var5, var1 = var0.posX - mc.thePlayer.posX;
+        double var3 = var0.posZ - mc.thePlayer.posZ;
+        if (var3 < 0.0D && var1 < 0.0D) {
+            var5 = 90.0D + Math.toDegrees(Math.atan(var3 / var1));
+        } else if (var3 < 0.0D && var1 > 0.0D) {
+            var5 = -90.0D + Math.toDegrees(Math.atan(var3 / var1));
+        } else {
+            var5 = Math.toDegrees(-Math.atan(var1 / var3));
+        }
+        return MathHelper.wrapDegrees(-(mc.thePlayer.rotationYaw - (float) var5));
     }
 
     public static float getPitchChangeToEntity(Entity entity) {
@@ -117,43 +200,43 @@ public class RotationUtils implements MCUtil {
         double maxy = e.posY + Math.abs(e.posY - box.maxY);
         double minz = e.posZ - 0.25;
         double maxz = e.posZ + 0.25;
-        boolean see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null ? true : false;
+        boolean see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null;
         if (see)
             return true;
         vec2 = new Vec3d(maxx, miny, minz);
-        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null ? true : false;
+        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null;
         if (see)
             return true;
         vec2 = new Vec3d(minx, miny, minz);
-        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null ? true : false;
+        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null;
 
         if (see)
             return true;
         vec2 = new Vec3d(minx, miny, maxz);
-        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null ? true : false;
+        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null;
         if (see)
             return true;
         vec2 = new Vec3d(maxx, miny, maxz);
-        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null ? true : false;
+        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null;
         if (see)
             return true;
 
         vec2 = new Vec3d(maxx, maxy, minz);
-        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null ? true : false;
+        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null;
 
         if (see)
             return true;
         vec2 = new Vec3d(minx, maxy, minz);
 
-        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null ? true : false;
+        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null;
         if (see)
             return true;
         vec2 = new Vec3d(minx, maxy, maxz - 0.1);
-        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null ? true : false;
+        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null;
         if (see)
             return true;
         vec2 = new Vec3d(maxx, maxy, maxz);
-        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null ? true : false;
+        see = mc.theWorld.rayTraceBlocks(vec1, vec2) == null;
         if (see)
             return true;
         return false;
@@ -182,5 +265,19 @@ public class RotationUtils implements MCUtil {
 
     public static Vec3d getEyesPos() {
         return new Vec3d(mc.thePlayer.posX, mc.thePlayer.posY + mc.thePlayer.getEyeHeight(), mc.thePlayer.posZ);
+    }
+
+    public static float getDifference(float a, float b) {
+        float r = (float) ((a - b) % 360.0);
+
+        if (r < -180.0) {
+            r += 360.0;
+        }
+
+        if (r >= 180.0) {
+            r -= 360.0;
+        }
+
+        return r;
     }
 }

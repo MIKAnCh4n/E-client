@@ -8,7 +8,6 @@ import zyx.existent.event.events.EventPacketReceive;
 import zyx.existent.event.events.EventRender2D;
 import zyx.existent.module.Category;
 import zyx.existent.module.Module;
-import zyx.existent.module.modules.hud.HUD;
 import zyx.existent.module.modules.hud.TabGui;
 import zyx.existent.utils.render.font.CFontRenderer;
 import zyx.existent.utils.render.font.Fonts;

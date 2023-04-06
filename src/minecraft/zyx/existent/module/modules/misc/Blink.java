@@ -1,9 +1,10 @@
 package zyx.existent.module.modules.misc;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.network.Packet;
-import net.minecraft.network.play.client.CPacketKeepAlive;
-import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.network.play.server.SPacketPlayerPosLook;
 import net.minecraft.util.math.Vec3d;
 import zyx.existent.event.EventTarget;
@@ -12,15 +13,12 @@ import zyx.existent.event.events.EventRender3D;
 import zyx.existent.module.Category;
 import zyx.existent.module.Module;
 import zyx.existent.module.data.Setting;
-import zyx.existent.utils.ChatUtils;
 import zyx.existent.utils.render.Colors;
 import zyx.existent.utils.render.RenderingUtils;
 import zyx.existent.utils.timer.Timer;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Blink extends Module {
-    private List<Packet> packets = new CopyOnWriteArrayList<>();
+    public static List<Packet> packets = new CopyOnWriteArrayList<>();
     private List<Vec3d> crumbs = new CopyOnWriteArrayList<>();
     private String BREADCRUMBS = "CRUMBS";
     private final Timer timer = new Timer();
@@ -49,13 +47,24 @@ public class Blink extends Module {
     @EventTarget
     public void onEvent(EventPacket ep) {
         setSuffix((mc.thePlayer.isMoving() ? "\2477" : "\2478") + packets.size());
+        if(packets.size() > 30) {
+        	toggle();
+        	toggle();
+        }
+        //all packet or die
+        if (ep.isOutgoing()) {
+        packets.add(ep.getPacket());
+        ep.setCancelled(true);
+        }
+        /*
         if (ep.isOutgoing() && ep.isPre() && (ep.getPacket() instanceof CPacketPlayer || ep.getPacket() instanceof CPacketKeepAlive)) {
             packets.add(ep.getPacket());
             ep.setCancelled(true);
         }
+        */
         if (ep.isIncoming() && ep.isPre()) {
             if (ep.getPacket() instanceof SPacketPlayerPosLook) {
-                ep.setCancelled(true);
+              //  ep.setCancelled(true);
             }
         }
     }
@@ -63,7 +72,7 @@ public class Blink extends Module {
     @EventTarget
     public void onEvent(EventRender3D render) {
         if (((Boolean) settings.get(BREADCRUMBS).getValue())) {
-            if (timer.delay(50)) {
+            if (timer.delay(10)) {
                 crumbs.add(new Vec3d(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ));
                 timer.reset();
             }

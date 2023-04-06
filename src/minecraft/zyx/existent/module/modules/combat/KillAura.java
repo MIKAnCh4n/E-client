@@ -1,5 +1,13 @@
 package zyx.existent.module.modules.combat;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -12,10 +20,11 @@ import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ClickType;
-import net.minecraft.item.*;
-import net.minecraft.network.play.client.CPacketHeldItemChange;
+import net.minecraft.item.ItemShield;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
+import net.minecraft.network.play.client.CPacketAnimation;
 import net.minecraft.network.play.client.CPacketPlayerDigging;
-import net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock;
 import net.minecraft.network.play.client.CPacketUseEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -23,7 +32,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import org.lwjgl.opengl.GL11;
 import zyx.existent.Existent;
 import zyx.existent.event.EventTarget;
 import zyx.existent.event.events.EventAttack;
@@ -36,20 +44,15 @@ import zyx.existent.module.data.Setting;
 import zyx.existent.module.modules.misc.Civbreak2;
 import zyx.existent.module.modules.movement.LongJump;
 import zyx.existent.module.modules.movement.Scaffold;
-import zyx.existent.utils.ChatUtils;
-import zyx.existent.utils.misc.MiscUtils;
 import zyx.existent.utils.RayTraceUtil;
 import zyx.existent.utils.RotationUtils;
+import zyx.existent.utils.misc.MiscUtils;
 import zyx.existent.utils.render.Colors;
 import zyx.existent.utils.render.RenderingUtils;
 import zyx.existent.utils.timer.Timer;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
 public class KillAura extends Module {
+    private final String ROTMODE = "ROTMODE";
     private final String MODE = "MODE";
     private final String SORT = "SORT";
     private final String PLAYERS = "PLAYER";
@@ -75,10 +78,12 @@ public class KillAura extends Module {
     private final List<EntityLivingBase> targets;
     private final Timer attackTimer, switchTimer;
     private float[] angles = new float[2];
+    public int ticks;
 
     public KillAura(String name, String desc, int keybind, Category category) {
         super(name, desc, keybind, category);
 
+        settings.put(ROTMODE, new Setting<>(ROTMODE, new Options("Rotation Mode", "SmoothPredict", new String[]{"SmoothPredict", "BestPos", "Vector"}), "Aura method"));
         settings.put(MODE, new Setting<>(MODE, new Options("Aura Mode", "Priority", new String[]{"Priority", "Switch", "Tick", "Multi"}), "Aura method"));
         settings.put(SORT, new Setting<>(SORT, new Options("Sort Mode", "Angle", new String[]{"Range", "Angle", "Health", "Armor", "Cycle"}), "Sort method"));
         settings.put(RANGE, new Setting<>(RANGE, 4.2, "Aura Range.", 0.1, 1.0, 7.0));
@@ -105,9 +110,9 @@ public class KillAura extends Module {
     public void onEnable() {
         this.attackTimer.reset();
         this.switchTimer.reset();
+        this.ticks = 0;
         if (mc.theWorld != null && mc.thePlayer != null) {
             unblock();
-            this.angles = new float[]{mc.thePlayer.rotationYaw, mc.thePlayer.rotationPitch};
         }
         super.onEnable();
     }
@@ -123,6 +128,8 @@ public class KillAura extends Module {
     @EventTarget
     public void onUpdate(EventUpdate event) {
         String currentmode = ((Options) settings.get(MODE).getValue()).getSelected();
+        EventAttack ej = new EventAttack(target, true);
+        EventAttack ej2 = new EventAttack(target, false);
         int minAPS = ((Number) settings.get(MINAPS).getValue()).intValue() * 10;
         int maxAPS = ((Number) settings.get(MAXAPS).getValue()).intValue() * 10;
         double range = ((Number) settings.get(RANGE).getValue()).doubleValue();
@@ -152,7 +159,10 @@ public class KillAura extends Module {
                 target = !targets.isEmpty() ? targets.get(0) : null;
                 break;
             case "Tick":
-                target = !targets.isEmpty() ? getBestEntity() : null;
+                targets.sort(Comparator.comparingInt(e -> e.hurtTime));
+                if (this.targetIndex >= this.targets.size())
+                    this.targetIndex = 0;
+                target = !targets.isEmpty() ? targets.get(this.targetIndex) : null;
                 break;
             case "Multi":
                 targets.sort(Comparator.comparingInt(e -> e.hurtTime));
@@ -165,39 +175,54 @@ public class KillAura extends Module {
             return;
         if (event.isPre() && target != null) {
             if (!flag) {
-                final float[] rotations = RotationUtils.getRotations(target);
-                this.angles = new float[]{rotations[0], rotations[1]};
-                if (this.angles[0] > rotations[0]) {
-                    this.angles[0] -= angleStep;
-                } else if (this.angles[0] < rotations[0]) {
-                    this.angles[0] += angleStep;
+                float[] rotations = null;
+                switch (((Options) settings.get(ROTMODE).getValue()).getSelected()) {
+                    case "BestPos":
+                        rotations = RotationUtils.getRotations(target, range);
+                        break;
+                    case "SmoothPredict":
+                        float[] rotationsCurrent = new float[]{mc.thePlayer.rotationYaw, mc.thePlayer.rotationPitch};
+                        float[] rotationsInstant = RotationUtils.getRotations(target, true, 1);
+                        rotations = RotationUtils.smoothRotation(rotationsCurrent, rotationsInstant, randomNumber(180, 90) + ThreadLocalRandom.current().nextInt(5));
+                        break;
+                    case "Vector":
+                        Vec3d playerVec = new Vec3d(event.getX(), event.getY() + mc.thePlayer.getEyeHeight(), event.getZ());
+                        Vec3d targetVec = target.getPositionVector();
+                        if (targetVec.yCoord - 0.7D > event.getY()) {
+                            targetVec = targetVec.addVector(0.0D, (target.getEyeHeight() / 2.0F), 0.0D);
+                        } else if (targetVec.yCoord > event.getY()) {
+                            targetVec = targetVec.addVector(0.0D, (target.getEyeHeight() / 1.5F), 0.0D);
+                        } else {
+                            targetVec = targetVec.addVector(0.0D, target.getEyeHeight(), 0.0D);
+                        }
+                        targetVec = targetVec.addVector(target.posX - target.lastTickPosX, 0.0D, target.posZ - target.lastTickPosZ);
+                        rotations = RotationUtils.getNeededFacing(targetVec, playerVec);
+                        break;
                 }
-                float yawDiff = this.angles[0] - rotations[0];
-                if (yawDiff < angleStep) {
-                    this.angles[0] = rotations[0];
-                }
-                if (currentmode.equalsIgnoreCase("Multi")) {
-                    if (this.lastYaw != null)
-                        event.setYaw(this.lastYaw.floatValue());
-                    float yawDist = RotationUtils.normalizeAngle(this.angles[0] - event.getYaw());
-                    if (yawDist > 15.0F) {
-                        event.setYaw(RotationUtils.normalizeAngle(event.getYaw() + yawDist / 2.0F));
-                        mc.thePlayer.renderYawOffset = RotationUtils.normalizeAngle(event.getYaw() + yawDist / 2.0F);
-                        mc.thePlayer.rotationYawHead = RotationUtils.normalizeAngle(event.getYaw() + yawDist / 2.0F);
+                if (rotations != null) {
+                    if (currentmode.equalsIgnoreCase("Multi")) {
+                        if (this.lastYaw != null)
+                            event.setYaw(this.lastYaw);
+                        float yawDist = RotationUtils.normalizeAngle(rotations[0] - event.getYaw());
+                        if (yawDist > 15.0F) {
+                            event.setYaw(RotationUtils.normalizeAngle(event.getYaw() + yawDist / 2.0F));
+                            mc.thePlayer.renderYawOffset = RotationUtils.normalizeAngle(event.getYaw() + yawDist / 2.0F);
+                            mc.thePlayer.rotationYawHead = RotationUtils.normalizeAngle(event.getYaw() + yawDist / 2.0F);
+                        } else {
+                            event.setYaw(rotations[0]);
+                            mc.thePlayer.renderYawOffset = rotations[0];
+                            mc.thePlayer.rotationYawHead = rotations[0];
+                        }
+                        event.setPitch(rotations[1]);
+                        mc.thePlayer.rotationPitchHead = rotations[1];
+                        this.lastYaw = event.getYaw();
                     } else {
-                        event.setYaw(this.angles[0]);
-                        mc.thePlayer.renderYawOffset = this.angles[0];
-                        mc.thePlayer.rotationYawHead = this.angles[0];
+                        event.setYaw(rotations[0]);
+                        event.setPitch(rotations[1]);
+                        mc.thePlayer.renderYawOffset = rotations[0];
+                        mc.thePlayer.rotationYawHead = rotations[0];
+                        mc.thePlayer.rotationPitchHead = rotations[1];
                     }
-                    event.setPitch(this.angles[1]);
-                    mc.thePlayer.rotationPitchHead = angles[1];
-                    this.lastYaw = event.getYaw();
-                } else {
-                    event.setYaw(angles[0]);
-                    event.setPitch(angles[1]);
-                    mc.thePlayer.renderYawOffset = angles[0];
-                    mc.thePlayer.rotationYawHead = angles[0];
-                    mc.thePlayer.rotationPitchHead = angles[1];
                 }
 
                 if (flag2) {
@@ -209,76 +234,51 @@ public class KillAura extends Module {
                             b = b1;
                         }
                     }
-                    if (b != -1)
+                    if (b != -1) {
                         this.mc.thePlayer.inventory.currentItem = b;
+                    }
                 }
             }
         } else if (target != null) {
             if (!flag) {
-                block();
-                switch (currentmode) {
-                    case "Switch":
-                    case "Priority":
-                    case "Multi":
-                        if (aps != 0 && !((Boolean) settings.get(COOLDOWN).getValue())) {
-                            if (attackTimer.delay(aps)) {
-                                if (validEntity(target)) {
-                                    EventAttack ej = new EventAttack(target, true);
-                                    EventAttack ej2 = new EventAttack(target, false);
+                if (validEntity(target)) {
+                    block();
+                    switch (currentmode) {
+                        case "Switch":
+                        case "Priority":
+                        case "Multi":
+                            if (aps != 0 && !((Boolean) settings.get(COOLDOWN).getValue())) {
+                                if (attackTimer.delay(aps)) {
                                     ej.call();
                                     unblock();
                                     attack(target);
-
                                     attacking = true;
                                     ej2.call();
                                     attackTimer.reset();
                                 }
-                            }
-                        } else if (mc.thePlayer.getCooledAttackStrength(0) >= 1) {
-                            if (validEntity(target)) {
-                                RayTraceResult ray = rayCast(mc.thePlayer, target.posX, target.posY + target.getEyeHeight(), target.posZ);
-
-                                if (ray != null) {
-                                    Entity entityHit = ray.entityHit;
-
-                                    if (entityHit instanceof EntityLivingBase) {
-                                        if (validEntity((EntityLivingBase) entityHit)) {
-                                            target = (EntityLivingBase) entityHit;
-                                        }
-                                    }
-                                }
-
-                                EventAttack ej = new EventAttack(target, true);
-                                EventAttack ej2 = new EventAttack(target, false);
+                            } else if (mc.thePlayer.getCooledAttackStrength(0) >= 1) {
                                 ej.call();
                                 unblock();
                                 attack(target);
-
                                 attacking = true;
                                 ej2.call();
                                 attackTimer.reset();
                             }
-                        }
-                        break;
-                    case "Tick":
-                        if (attackTimer.delay(483)) {
-                            if (validEntity(target)) {
-                                EventAttack ej = new EventAttack(target, true);
-                                EventAttack ej2 = new EventAttack(target, false);
+                            break;
+                        case "Tick":
+                            boolean hurtTime = target.hurtTime >= 6;
+                            this.ticks++;
+                            if (this.ticks >= 3 && !hurtTime) {
+                                this.ticks = 0;
                                 ej.call();
-
                                 unblock();
                                 attack(target);
-                                changeTarget();
-                                swap(9, this.mc.thePlayer.inventory.currentItem);
-
-                                target = null;
                                 attacking = true;
                                 ej2.call();
                                 attackTimer.reset();
                             }
-                        }
-                        break;
+                            break;
+                    }
                 }
             }
         }
@@ -353,7 +353,7 @@ public class KillAura extends Module {
         double height = entity.height + 0.1;
 
         Vec3d vec = new Vec3d(x - width / 2, y, z - width / 2);
-        Vec3d vec2 = new Vec3d(x + width / 2, y - height, z + width / 2);
+        Vec3d vec2 = new Vec3d(x + width / 2, y - 0.1, z + width / 2);
         RenderingUtils.pre3D();
         mc.entityRenderer.setupCameraTransform(mc.timer.renderPartialTicks, 2);
         RenderingUtils.glColor(color);
@@ -370,6 +370,15 @@ public class KillAura extends Module {
         mc.playerController.syncCurrentPlayItem();
         mc.thePlayer.connection.sendPacket(new CPacketUseEntity(entityLivingBase));
     }
+    private void Silentattack(EntityLivingBase entityLivingBase) {
+        final float sharpLevel = EnchantmentHelper.getModifierForCreature(mc.thePlayer.getHeldItem(EnumHand.MAIN_HAND), EnumCreatureAttribute.UNDEFINED);
+
+        if (sharpLevel > 0.0F)
+            mc.thePlayer.onEnchantmentCritical(entityLivingBase);
+        mc.thePlayer.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
+        mc.playerController.syncCurrentPlayItem();
+        mc.thePlayer.connection.sendPacket(new CPacketUseEntity(entityLivingBase));
+    }
     private void block() {
         if ((Boolean) settings.get(AUTOBLOCK).getValue() && !mc.thePlayer.isBlocking() && mc.thePlayer.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof ItemShield) {
             mc.playerController.processRightClick(mc.thePlayer, mc.theWorld, EnumHand.OFF_HAND);
@@ -383,7 +392,7 @@ public class KillAura extends Module {
     public void changeTarget() {
         if (this.targets.size() == 1)
             return;
-        this.targetIndex++;
+        ++this.targetIndex;
     }
     private void swap(int slot, int hotbarNum) {
         this.mc.playerController.windowClick(this.mc.thePlayer.inventoryContainer.windowId, slot, hotbarNum, ClickType.SWAP, this.mc.thePlayer);
